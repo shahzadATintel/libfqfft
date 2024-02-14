@@ -1,5 +1,5 @@
 <h1 align="center">libfqfft</h1>
-<h4 align="center">C++ library for FFTs in Finite Fields</h4>
+<h4 align="center">Clone of : C++ library for FFTs in Finite Fields</h4>
 
 ___libfqfft___ is a C++ library for __Fast Fourier Transforms (FFTs)__ in __finite fields__ with __multithreading__ support (via OpenMP). The library is developed by [SCIPR Lab] and contributors (see [AUTHORS] file) and is released under the MIT License (see [LICENSE] file). The library provides functionality for fast multipoint polynomial evaluation, fast polynomial interpolation, and fast computation of Lagrange polynomials. Check out the [__Performance__](#performance) section for __memory__, __runtime__, and __field operation__ profiling data.
 
