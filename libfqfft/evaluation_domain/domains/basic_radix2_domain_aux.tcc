@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <vector>
-// #include <execinfo.h>
+#include <execinfo.h>
 
 #ifdef MULTICORE
 #include <omp.h>
