@@ -21,7 +21,8 @@
 #include <libfqfft/evaluation_domain/domains/basic_radix2_domain_aux.hpp>
 
 namespace libfqfft {
-
+static unsigned int ntt_test_vector_generated=0;
+static unsigned int buttefly_test_vector_generated=0;
 template<typename FieldT>
 basic_radix2_domain<FieldT>::basic_radix2_domain(const size_t m) : evaluation_domain<FieldT>(m)
 {

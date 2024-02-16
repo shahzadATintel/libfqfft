@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <vector>
+// #include <execinfo.h>
 
 #ifdef MULTICORE
 #include <omp.h>
@@ -37,6 +38,29 @@ namespace libfqfft {
 #define _basic_radix2_FFT _basic_serial_radix2_FFT
 #endif
 
+
+
+void printCallStack() {
+    void *array[10];
+    size_t size;
+    char **strings;
+    size_t i;
+
+    // Capture the backtrace
+    size = backtrace(array, 10);
+    strings = backtrace_symbols(array, size);
+
+    printf("Call stack (demangling is manual):\n");
+    for (i = 0; i < size; i++) {
+        printf("%s\n", strings[i]);
+    }
+
+    free(strings);
+}
+
+
+
+
 /*
  Below we make use of pseudocode from [CLRS 2n Ed, pp. 864].
  Also, note that it's the caller's responsibility to multiply by 1/N.
@@ -44,9 +68,17 @@ namespace libfqfft {
 template<typename FieldT>
 void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
 {
+    // printCallStack();
+    #ifdef __LOG_NTT_IO__
+    __LOG::logNTTSizeIn(a.size());
+    for (size_t i = 0; i < a.size(); i++) 
+    {
+        __LOG::logNTTInNonMont(a[i].as_bigint());
+        __LOG::logNTTIn(a[i]);
+    }
+    #endif
     const size_t n = a.size(), logn = log2(n);
     if (n != (1u << logn)) throw DomainSizeException("expected n == (1u << logn)");
-
     /* swapping in place (from Storer's book) */
     for (size_t k = 0; k < n; ++k)
     {
@@ -60,14 +92,21 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
     {
         // w_m is 2^s-th root of unity now
         const FieldT w_m = omega^(n/(2*m));
+        // std::cout<<"realWm="<<w_m<<std::endl;
 
         asm volatile  ("/* pre-inner */");
         for (size_t k = 0; k < n; k += 2*m)
         {
             FieldT w = FieldT::one();
+            // std::cout<<"realmod="<<FieldT::mod<<std::endl;
+            // std::cout<<"realone="<<w<<std::endl;
             for (size_t j = 0; j < m; ++j)
             {
+                // std::cout<<"realmod="<<FieldT::mod<<std::endl;
                 const FieldT t = w * a[k+j+m];
+                // std::cout<<"realop1="<<w<<std::endl;
+                // std::cout<<"realop2="<<a[k+j+m]<<std::endl;
+                // std::cout<<"realres="<<t<<std::endl;
                 a[k+j+m] = a[k+j] - t;
                 a[k+j] += t;
                 w *= w_m;
@@ -76,6 +115,17 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
         asm volatile ("/* post-inner */");
         m *= 2;
     }
+    #ifdef __LOG_NTT_IO__
+    __LOG::logNTTSizeOut(a.size());
+    for (size_t i = 0; i < a.size(); i++) 
+    {
+        __LOG::logNTTOutNonMont(a[i].as_bigint());
+        __LOG::logNTTOut(a[i]);
+    }
+    #ifdef __NTT_EXIT_EARLY__
+    exit(0);
+    #endif
+    #endif
 }
 
 template<typename FieldT>
