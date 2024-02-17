@@ -70,6 +70,23 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
 {
     // printCallStack();
     #ifdef __LOG_NTT_IO__
+    int ntt_size = a.size();
+    __LOG::logNTTTwiddle(omega);
+    __LOG::logNTTNonMontTwiddle(omega.as_bigint());
+    FieldT root = omega;
+    FieldT power_root=root;
+    FieldT unit = FieldT::one();
+    __LOG::logNTTNonMontTwiddle(unit.as_bigint());
+    __LOG::logNTTTwiddle(unit);
+    for (size_t p = 1; p < ntt_size; p++)
+    {
+    __LOG::logNTTNonMontTwiddle(power_root.as_bigint());
+    __LOG::logNTTTwiddle(power_root);
+       power_root=power_root * root;
+    }
+    __LOG::logNTTNonMontTwiddle(power_root.as_bigint());
+    __LOG::logNTTTwiddle(power_root);
+    
     __LOG::logNTTSizeIn(a.size());
     for (size_t i = 0; i < a.size(); i++) 
     {
