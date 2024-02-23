@@ -138,12 +138,14 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
                 a[k+j] += t;
                 w *= w_m;
                 #ifdef __LOG_BUTTERFLY_IO__
+                std::cout<<"__LOG_BUTTERFLY_IO__"<<std::endl;
                 __LOG::logButterflyOutMont(a[k+j]);
                 __LOG::logButterflyOutMont(a[k+j+m]);
                 __LOG::logButterflyOutNonMont(a[k+j]);
                 __LOG::logButterflyOutNonMont(a[k+j+m]);
                 if(butterfly_log_count == __LOG_BUTTERFLY_COUNT__)
                 {
+                    std::cout<<"early-exit-butterfly-counter-expired"<<std::endl;
                     exit(0);
                 }
                 #endif
@@ -160,10 +162,12 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
         __LOG::logNTTOut(a[i]);
     }
     #ifdef __NTT_EXIT_EARLY__
+    std::cout<<"early-exit-ntt"<<std::endl;
     exit(0);
     #endif
     #endif
 #ifdef __BUTTERFLY_EXIT_EARLY__
+//std::cout<<"early-exit-butterfly"<<std::endl;
 exit(0);
 #endif
 }
