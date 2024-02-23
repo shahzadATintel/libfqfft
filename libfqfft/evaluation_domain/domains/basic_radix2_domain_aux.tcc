@@ -38,7 +38,7 @@ namespace libfqfft {
 #define _basic_radix2_FFT _basic_serial_radix2_FFT
 #endif
 
-
+static int butterfly_log_count=0;
 
 void printCallStack() {
     void *array[10];
@@ -76,16 +76,16 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
     FieldT root = omega;
     FieldT power_root=root;
     FieldT unit = FieldT::one();
-    __LOG::logNTTNonMontTwiddle(unit.as_bigint());
     __LOG::logNTTTwiddle(unit);
+    __LOG::logNTTNonMontTwiddle(unit.as_bigint());
     for (size_t p = 1; p < ntt_size; p++)
     {
-    __LOG::logNTTNonMontTwiddle(power_root.as_bigint());
     __LOG::logNTTTwiddle(power_root);
+    __LOG::logNTTNonMontTwiddle(power_root.as_bigint());
        power_root=power_root * root;
     }
-    __LOG::logNTTNonMontTwiddle(power_root.as_bigint());
     __LOG::logNTTTwiddle(power_root);
+    __LOG::logNTTNonMontTwiddle(power_root.as_bigint());
     
     __LOG::logNTTSizeIn(a.size());
     for (size_t i = 0; i < a.size(); i++) 
@@ -120,13 +120,33 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
             for (size_t j = 0; j < m; ++j)
             {
                 // std::cout<<"realmod="<<FieldT::mod<<std::endl;
+                butterfly_log_count++;
                 const FieldT t = w * a[k+j+m];
+                #ifdef __LOG_BUTTERFLY_IO__
+                __LOG::logButterflyInMont(w);
+                __LOG::logButterflyInMont(a[k+j+m]);
+                __LOG::logButterflyInMont(a[k+j]);
+
+                __LOG::logButterflyInNonMont(w);
+                __LOG::logButterflyInNonMont(a[k+j+m]);
+                __LOG::logButterflyInNonMont(a[k+j]);
+                #endif
                 // std::cout<<"realop1="<<w<<std::endl;
                 // std::cout<<"realop2="<<a[k+j+m]<<std::endl;
                 // std::cout<<"realres="<<t<<std::endl;
                 a[k+j+m] = a[k+j] - t;
                 a[k+j] += t;
                 w *= w_m;
+                #ifdef __LOG_BUTTERFLY_IO__
+                __LOG::logButterflyOutMont(a[k+j]);
+                __LOG::logButterflyOutMont(a[k+j+m]);
+                __LOG::logButterflyOutNonMont(a[k+j]);
+                __LOG::logButterflyOutNonMont(a[k+j+m]);
+                if(butterfly_log_count == __LOG_BUTTERFLY_COUNT__)
+                {
+                    exit(0);
+                }
+                #endif
             }
         }
         asm volatile ("/* post-inner */");
@@ -143,6 +163,9 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
     exit(0);
     #endif
     #endif
+#ifdef __BUTTERFLY_EXIT_EARLY__
+exit(0);
+#endif
 }
 
 template<typename FieldT>
