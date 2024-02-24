@@ -70,6 +70,7 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
 {
     // printCallStack();
     #ifdef __LOG_NTT_IO__
+    std::cout<<"ntt_mod:"<<FieldT::mod<<std::endl;
     int ntt_size = a.size();
     __LOG::logNTTTwiddle(omega);
     __LOG::logNTTNonMontTwiddle(omega.as_bigint());
@@ -127,9 +128,9 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
                 __LOG::logButterflyInMont(a[k+j+m]);
                 __LOG::logButterflyInMont(a[k+j]);
 
-                __LOG::logButterflyInNonMont(w);
-                __LOG::logButterflyInNonMont(a[k+j+m]);
-                __LOG::logButterflyInNonMont(a[k+j]);
+                __LOG::logButterflyInNonMont(w.as_bigint());
+                __LOG::logButterflyInNonMont(a[k+j+m].as_bigint());
+                __LOG::logButterflyInNonMont(a[k+j].as_bigint());
                 #endif
                 // std::cout<<"realop1="<<w<<std::endl;
                 // std::cout<<"realop2="<<a[k+j+m]<<std::endl;
@@ -141,8 +142,8 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
                 std::cout<<"__LOG_BUTTERFLY_IO__"<<std::endl;
                 __LOG::logButterflyOutMont(a[k+j]);
                 __LOG::logButterflyOutMont(a[k+j+m]);
-                __LOG::logButterflyOutNonMont(a[k+j]);
-                __LOG::logButterflyOutNonMont(a[k+j+m]);
+                __LOG::logButterflyOutNonMont(a[k+j].as_bigint());
+                __LOG::logButterflyOutNonMont(a[k+j+m].as_bigint());
                 if(butterfly_log_count == __LOG_BUTTERFLY_COUNT__)
                 {
                     std::cout<<"early-exit-butterfly-counter-expired"<<std::endl;
@@ -154,6 +155,9 @@ void _basic_serial_radix2_FFT(std::vector<FieldT> &a, const FieldT &omega)
         asm volatile ("/* post-inner */");
         m *= 2;
     }
+    #ifdef __LOG_BUTTERFLY_IO__
+    std::cout<<"ntt_mod"<<FieldT::mod<<std::endl;
+    #endif
     #ifdef __LOG_NTT_IO__
     __LOG::logNTTSizeOut(a.size());
     for (size_t i = 0; i < a.size(); i++) 
